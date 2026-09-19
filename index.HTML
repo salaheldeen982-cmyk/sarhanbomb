@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سرحان للطيران - القائمة الرئيسية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #020617;
+            color: #ffffff;
+            perspective: 1000px;
+        }
+
+        /* المسرح الـ 3D للمطار والطائرة */
+        .viewport-3d {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            transform-style: preserve-3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- 1. بناء المطار ثلاثي الأبعاد --- */
+        .airport-ground {
+            position: absolute;
+            width: 3000px;
+            height: 3000px;
+            background: #0f172a;
+            transform: rotateX(75deg) translateZ(-400px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 0 500px rgba(0,0,0,0.8);
+        }
+
+        /* مدرج الطائرات */
+        .runway {
+            position: absolute;
+            width: 250px;
+            height: 100%;
+            background: #1e293b;
+            border-left: 6px dashed #22c55e;
+            border-right: 6px dashed #ef4444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        /* خطوط المدرج المضيئة */
+        .runway-line {
+            width: 12px;
+            height: 80px;
+            background: #f59e0b;
+            box-shadow: 0 0 15px #f59e0b;
+        }
+
+        /* برج المراقبة */
+        .tower {
+            position: absolute;
+            right: 400px;
+            top: 1000px;
+            width: 80px;
+            height: 80px;
+            background: #334155;
+            transform: rotateX(-90deg) translateZ(100px);
+            border-radius: 10px;
+            box-shadow: 0 0 30px #38bdf8;
+            border: 4px solid #38bdf8;
+        }
+
+        /* --- 2. بناء الطائرة ثلاثية الأبعاد --- */
+        .airplane-container {
+            position: absolute;
+            width: 120px;
+            height: 160px;
+            transform-style: preserve-3d;
+            animation: flyInAirport 8s infinite ease-in-out;
+        }
+
+        /* جسم الطائرة */
+        .plane-body {
+            position: absolute;
+            width: 30px;
+            height: 140px;
+            background: linear-gradient(to bottom, #f8fafc, #94a3b8);
+            left: 45px;
+            border-radius: 50px 50px 10px 10px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        /* أجنحة الطائرة */
+        .plane-wings {
+            position: absolute;
+            width: 160px;
+            height: 35px;
+            background: #0284c7;
+            top: 55px;
+            left: -20px;
+            border-radius: 10px;
+            transform: translateZ(5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ذيل الطائرة */
+        .plane-tail {
+            position: absolute;
+            width: 50px;
+            height: 20px;
+            background: #e11d48;
+            bottom: 5px;
+            left: 35px;
+            border-radius: 5px;
+        }
+
+        /* كابينة القيادة */
+        .cockpit {
+            position: absolute;
+            width: 18px;
+            height: 25px;
+            background: #38bdf8;
+            top: 15px;
+            left: 51px;
+            border-radius: 10px 10px 5px 5px;
+            box-shadow: 0 0 10px #38bdf8;
+        }
+
+        /* حركة التحليق والطيران فوق المطار */
+        @keyframes flyInAirport {
+            0% {
+                transform: translateY(300px) translateZ(-600px) rotateX(20deg) rotateY(-10deg) rotateZ(-5deg);
+            }
+            30% {
+                transform: translateY(100px) translateZ(-300px) rotateX(10deg) rotateY(0deg) rotateZ(0deg);
+            }
+            60% {
+                transform: translateY(-80px) translateZ(-100px) rotateX(-5deg) rotateY(15deg) rotateZ(10deg);
+            }
+            100% {
+                transform: translateY(300px) translateZ(-600px) rotateX(20deg) rotateY(-10deg) rotateZ(-5deg);
+            }
+        }
+
+        /* --- 3. القائمة الرئيسية وواجهة المستخدم --- */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(2, 6, 23, 0.3) 0%, rgba(2, 6, 23, 0.85) 100%);
+            pointer-events: none;
+        }
+
+        .menu-box {
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 40px 50px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        }
+
+        .title {
+            font-size: 3.2rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+            letter-spacing: 2px;
+            color: #f8fafc;
+        }
+
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 260px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border: 1px solid #38bdf8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: #0f172a;
+        }
+
+        .btn:disabled {
+            background: #334155;
+            color: #64748b;
+            border-color: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* نافذة الإعدادات */
+        .modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #38bdf8;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 20;
+            pointer-events: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #38bdf8;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 1.05rem;
+        }
+
+        .setting-item input[type="range"] {
+            width: 120px;
+        }
+
+        .setting-item select {
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: #0f172a;
+            color: #fff;
+            border: 1px solid #38bdf8;
+        }
+
+        .close-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #e63946;
+            border: none;
+        }
+
+        .close-btn:hover {
+            background: #d62828;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- مشهد المطار والطائرة الـ 3D -->
+    <div class="viewport-3d">
+        <!-- أرضية المطار والمدرج -->
+        <div class="airport-ground">
+            <div class="runway">
+                <div class="runway-line"></div>
+                <div class="runway-line"></div>
+                <div class="runway-line"></div>
+                <div class="runway-line"></div>
+                <div class="runway-line"></div>
+            </div>
+            <div class="tower"></div>
+        </div>
+
+        <!-- الطائرة المتحركة 3D -->
+        <div class="airplane-container">
+            <div class="plane-body"></div>
+            <div class="cockpit"></div>
+            <div class="plane-wings"></div>
+            <div class="plane-tail"></div>
+        </div>
+    </div>
+
+    <!-- القائمة الرئيسية -->
+    <div class="ui-layer">
+        <div class="menu-box">
+            <h1 class="title">سرحان للطيران</h1>
+            <div class="menu-container">
+                <button class="btn" onclick="startGame()">إبدأ</button>
+                <button class="btn" id="continue-btn" disabled onclick="continueGame()">استمرار</button>
+                <button class="btn" onclick="openSettings()">الإعدادات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الإعدادات -->
+    <div class="modal" id="settings-modal">
+        <h2>الإعدادات العامة</h2>
+        
+        <div class="setting-item">
+            <label for="sound-vol">الصوت:</label>
+            <input type="range" id="sound-vol" min="0" max="100" value="80">
+        </div>
+
+        <div class="setting-item">
+            <label for="music-vol">الموسيقى:</label>
+            <input type="range" id="music-vol" min="0" max="100" value="50">
+        </div>
+
+        <div class="setting-item">
+            <label for="language">اللغة:</label>
+            <select id="language">
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <label for="dark-mode">الوضع الداكن:</label>
+            <input type="checkbox" id="dark-mode" checked>
+        </div>
+
+        <button class="btn close-btn" onclick="closeSettings()">إغلاق</button>
+    </div>
+
+    <script>
+        // التاكد من وجود حفظ سابق لزر استمرار
+        if (localStorage.getItem('gameSavedProgress')) {
+            document.getElementById('continue-btn').disabled = false;
+        }
+
+        function startGame() {
+            alert("بدء لعبة التفتيش لمطار سرحان للطيران!");
+        }
+
+        function continueGame() {
+            alert("جاري تحميل تقدمك السابق...");
+        }
+
+        function openSettings() {
+            document.getElementById('settings-modal').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
