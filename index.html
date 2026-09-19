@@ -3,207 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مزرعة السرحان</title>
+    <title>سرحان فارم</title>
     <style>
+        /* إعدادات الصفحة الأساسية والمنظور ثلاثي الأبعاد */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+            perspective: 1200px; /* عمق المنظور */
         }
-        
-        /* تصميم الخلفية المتحركة */
-        .farm-bg {
+
+        /* المشهد ثلاثي الأبعاد */
+        .scene {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            /* سماء زرقاء، أرض ترابية، وعشب أخضر */
-            background: linear-gradient(to bottom, #87CEEB 45%, #8B4513 45%, #228B22 50%);
-            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+            transform-style: preserve-3d;
         }
+
+        /* الأرضية ثلاثية الأبعاد */
+        .ground {
+            position: absolute;
+            bottom: -30%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(to top, #2e8b57, #7cfc00);
+            transform: rotateX(75deg); /* إمالة الأرضية لتصبح 3D */
+            transform-origin: top;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.3);
+            border-top: 15px solid #8b4513;
+        }
+
+        /* العناصر القائمة على الأرض (أشجار وحيوانات) */
+        .item-3d {
+            position: absolute;
+            transform: rotateX(-75deg); /* تعديل الميل لتقف عمودية على الأرض */
+            transform-origin: bottom;
+            font-size: 6rem;
+            filter: drop-shadow(15px 15px 10px rgba(0,0,0,0.5)); /* ظل مجسم */
+        }
+
+        .tree1 { top: 20%; left: 30%; font-size: 8rem; }
+        .tree2 { top: 40%; left: 70%; font-size: 10rem; }
+        .tree3 { top: 10%; left: 80%; font-size: 7rem; }
+        
+        /* حركة الحيوانات في المشهد الـ 3D */
+        .animal {
+            animation: walk3D 25s infinite linear;
+        }
+        .cow { top: 50%; left: -10%; animation-duration: 30s; }
+        .sheep { top: 70%; left: -20%; animation-duration: 22s; }
+        .tractor { top: 30%; left: -30%; font-size: 7rem; animation-duration: 18s; }
+
+        @keyframes walk3D {
+            0% { transform: translateX(120vw) rotateX(-75deg); }
+            100% { transform: translateX(-50vw) rotateX(-75deg); }
+        }
+
+        /* السماء وعناصرها */
         .sun {
             position: absolute;
-            top: 10%; right: 10%;
-            width: 100px; height: 100px;
-            background-color: #FFD700;
+            top: 5%;
+            right: 10%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, #fff, #ffd700);
             border-radius: 50%;
-            box-shadow: 0 0 50px #FFD700;
-            animation: pulse 3s infinite alternate;
+            box-shadow: 0 0 80px #ffd700, 0 0 150px #ff8c00;
+            transform: translateZ(-400px); /* إبعاد الشمس في العمق */
+            animation: pulseSun 4s infinite alternate;
         }
+
         .cloud {
             position: absolute;
-            font-size: 5rem;
-            animation: moveClouds 25s linear infinite;
+            font-size: 7rem;
+            filter: drop-shadow(10px 10px 15px rgba(0,0,0,0.2));
+            transform: translateZ(-200px);
+            animation: floatCloud 40s infinite linear;
         }
-        .cloud1 { top: 5%; left: -10%; }
-        .cloud2 { top: 15%; left: -30%; animation-duration: 35s; }
-        .animals {
+        .cloud1 { top: 10%; left: -20%; }
+        .cloud2 { top: 25%; left: -40%; animation-duration: 50s; }
+
+        @keyframes pulseSun {
+            0% { transform: translateZ(-400px) scale(1); }
+            100% { transform: translateZ(-400px) scale(1.1); }
+        }
+        @keyframes floatCloud {
+            0% { transform: translateX(120vw) translateZ(-200px); }
+            100% { transform: translateX(-50vw) translateZ(-200px); }
+        }
+
+        /* واجهة المستخدم الاحترافية (Glassmorphism) */
+        .ui-layer {
             position: absolute;
-            bottom: 25%;
-            width: 100%;
-            font-size: 4rem;
-            white-space: nowrap;
-            animation: moveAnimals 20s linear infinite;
-        }
-
-        /* حركات الأنيميشن */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
-        @keyframes moveClouds {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-20vw); }
-        }
-        @keyframes moveAnimals {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100vw); }
-        }
-
-        /* تصميم واجهة المستخدم (القائمة) */
-        .menu-container {
+            top: 0; left: 0; width: 100%; height: 100%;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            width: 450px;
-            margin: auto;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            padding: 30px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .menu-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            padding: 50px;
+            width: 500px;
             text-align: center;
-            backdrop-filter: blur(5px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+            transform: translateZ(100px); /* إبراز القائمة للأمام */
         }
+
         h1 {
-            color: #2e8b57;
-            font-size: 3rem;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 4rem;
+            color: #ffffff;
+            margin: 0 0 40px 0;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 2px 5px #228b22;
         }
+
+        /* أزرار احترافية 3D */
         button {
-            background-color: #8B4513;
+            background: linear-gradient(145deg, #4caf50, #2e8b57);
             color: white;
-            border: 2px solid #5C3A21;
-            padding: 15px 30px;
-            margin: 10px;
-            font-size: 1.3rem;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.6rem;
             font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
+            border-radius: 50px;
+            margin: 15px auto;
+            display: block;
             width: 85%;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 -4px 0 rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
         }
+
         button:hover {
-            background-color: #A0522D;
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.4), inset 0 -4px 0 rgba(0,0,0,0.2);
+            background: linear-gradient(145deg, #5ddb62, #3cb371);
         }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
         button:disabled {
-            background-color: #999;
-            border-color: #777;
+            background: #888;
+            box-shadow: none;
             cursor: not-allowed;
             transform: none;
+            color: #ccc;
         }
-        
+
         .hidden { display: none; }
-        
+
+        /* قائمة المزارع المحفوظة */
         #farms-list {
-            margin-top: 15px;
-            width: 100%;
-            max-height: 150px;
+            margin-top: 20px;
+            max-height: 200px;
             overflow-y: auto;
         }
+
         .farm-item {
-            background: #2e8b57;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             cursor: pointer;
-            font-size: 1.1rem;
-            transition: background 0.2s;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: background 0.3s;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        .farm-item:hover { background: #3cb371; }
+
+        .farm-item:hover {
+            background: rgba(46, 139, 87, 0.8);
+        }
+
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4caf50; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- الخلفية المتحركة (شمس، سحاب، حيوانات وجرار) -->
-    <div class="farm-bg">
+    <!-- المشهد ثلاثي الأبعاد -->
+    <div class="scene">
+        <!-- السماء -->
         <div class="sun"></div>
         <div class="cloud cloud1">☁️</div>
         <div class="cloud cloud2">☁️</div>
-        <div class="animals">🐄 🐑 🐓 🚜 🐎</div>
+        
+        <!-- الأرضية -->
+        <div class="ground">
+            <!-- النباتات الثابتة -->
+            <div class="item-3d tree1">🌲</div>
+            <div class="item-3d tree2">🌳</div>
+            <div class="item-3d tree3">🌻</div>
+            
+            <!-- الحيوانات والجرار المتحرك -->
+            <div class="item-3d animal cow">🐄</div>
+            <div class="item-3d animal sheep">🐑</div>
+            <div class="item-3d animal tractor">🚜</div>
+        </div>
     </div>
 
-    <!-- قائمة البداية -->
-    <div class="menu-container" id="main-menu">
-        <h1>مزرعة السرحان</h1>
-        
-        <button id="btn-continue" onclick="showSavedFarms()">استمرار</button>
-        <button onclick="startNewFarm()">بدء مزرعة جديدة</button>
-        <button onclick="alert('جاري فتح الإعدادات...')">الإعدادات</button>
+    <!-- واجهة المستخدم (القائمة) -->
+    <div class="ui-layer">
+        <div class="menu-box" id="main-menu">
+            <h1>سرحان فارم</h1>
+            
+            <button id="btn-continue" onclick="showSavedFarms()">استمرار</button>
+            <button onclick="startNewFarm()">بدء مزرعة جديدة</button>
+            <button onclick="openSettings()">الإعدادات</button>
 
-        <!-- قائمة المزارع المحفوظة (تظهر عند الضغط على استمرار) -->
-        <div id="saved-farms-container" class="hidden">
-            <h3 style="color: #8B4513;">اختر مزرعتك:</h3>
-            <div id="farms-list"></div>
-            <button onclick="hideSavedFarms()" style="background-color: #555; width: 50%; margin-top: 15px;">رجوع</button>
+            <!-- حاوية المزارع المحفوظة -->
+            <div id="saved-farms-container" class="hidden">
+                <h3 style="color: white; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">اختر مزرعتك:</h3>
+                <div id="farms-list"></div>
+                <button onclick="hideSavedFarms()" style="background: #e74c3c; width: 60%; font-size: 1.2rem; padding: 12px;">رجوع</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // استخدام التخزين المحلي (localStorage) لحفظ المزارع حتى لو قفلت الصفحة
-        let savedFarms = JSON.parse(localStorage.getItem('sarhanFarms')) || [];
+        // نظام الحفظ الذكي باستخدام المتصفح
+        let savedFarms = JSON.parse(localStorage.getItem('sarhanFarmsData')) || [];
         
-        // عند تحميل الصفحة، نتحقق إذا كان هناك مزارع سابقة
         window.onload = function() {
+            const btnContinue = document.getElementById('btn-continue');
             if (savedFarms.length === 0) {
-                // إذا لم يكن هناك مزارع، نقوم بتعطيل زر الاستمرار
-                document.getElementById('btn-continue').disabled = true;
-                document.getElementById('btn-continue').innerText = "استمرار (لا توجد مزارع)";
+                btnContinue.disabled = true;
+                btnContinue.innerText = "استمرار (لا يوجد حفظ)";
             }
         };
 
-        // عرض قائمة المزارع عند الضغط على "استمرار"
         function showSavedFarms() {
             document.getElementById('btn-continue').style.display = 'none';
             document.getElementById('saved-farms-container').classList.remove('hidden');
             
             const list = document.getElementById('farms-list');
-            list.innerHTML = ''; // مسح القائمة القديمة
+            list.innerHTML = ''; 
             
             savedFarms.forEach((farm, index) => {
                 const div = document.createElement('div');
                 div.className = 'farm-item';
-                div.innerText = farm.name + ' (المستوى: ' + farm.level + ')';
+                div.innerHTML = `🌾 ${farm.name} <br><small>المستوى: ${farm.level}</small>`;
                 div.onclick = () => loadFarm(index);
                 list.appendChild(div);
             });
         }
 
-        // إخفاء القائمة والرجوع للشاشة الرئيسية
         function hideSavedFarms() {
-            document.getElementById('btn-continue').style.display = 'inline-block';
+            document.getElementById('btn-continue').style.display = 'block';
             document.getElementById('saved-farms-container').classList.add('hidden');
         }
 
-        // إنشاء مزرعة جديدة
         function startNewFarm() {
-            const farmName = prompt("أدخل اسم مزرعتك الجديدة:");
-            if (farmName) {
+            const farmName = prompt("أدخل اسم المزرعة الجديدة:");
+            if (farmName && farmName.trim() !== "") {
                 const newFarm = { name: farmName, level: 1 };
                 savedFarms.push(newFarm);
-                localStorage.setItem('sarhanFarms', JSON.stringify(savedFarms));
-                alert("تم إنشاء مزرعة '" + farmName + "' بنجاح!");
-                location.reload(); // تحديث الصفحة لتفعيل زر الاستمرار
+                localStorage.setItem('sarhanFarmsData', JSON.stringify(savedFarms));
+                location.reload(); 
             }
         }
 
-        // الدخول إلى المزرعة المختارة (هنا سنضع كود اللعبة الفعلي لاحقاً)
         function loadFarm(index) {
-            alert("جاري تحميل مزرعة: " + savedFarms[index].name + " ... (هنا سيتم فتح شاشة اللعبة)");
+            alert("تم تسجيل الدخول إلى: " + savedFarms[index].name + " بنجاح! سيتم برمجة داخل اللعبة قريباً.");
+        }
+
+        function openSettings() {
+            alert("جاري فتح إعدادات 'سرحان فارم' المتطورة...");
         }
     </script>
 </body>
