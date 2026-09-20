@@ -1,81 +1,137 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة تفكيك القنابل</title>
+    <title>لعبة الأبطال: تفكيك القنابل</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #1a1a1a; color: white; margin: 0; padding: 0; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; overflow: hidden; height: 100vh; }
         .hidden { display: none !important; }
-        #start-screen, #settings-screen, #modes-menu { padding: 50px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #2c3e50; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 5px; transition: background 0.3s; }
-        button:hover { background-color: #2980b9; }
-        input { padding: 15px; font-size: 18px; margin: 10px; width: 250px; border-radius: 5px; border: none; }
+        
+        /* واجهة البداية والإعدادات والقوائم */
+        .screen-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 30, 0.95); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; color: #e74c3c; text-shadow: 0 0 10px rgba(231, 76, 60, 0.5); }
+        h2 { font-size: 2rem; margin-bottom: 15px; color: #3498db; }
+        .menu-card { background: #1e1e2f; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 450px; text-align: center; border: 1px solid #333; }
+        
+        button { width: 100%; padding: 12px 20px; font-size: 1.1rem; margin: 8px 0; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: bold; transition: all 0.2s ease; }
+        button:hover { background: #c0392b; transform: translateY(-2px); }
+        button.secondary { background: #34495e; }
+        button.secondary:hover { background: #2c3e50; }
+        
+        input, select { width: 100%; padding: 12px; font-size: 1rem; margin: 8px 0; border-radius: 6px; border: 1px solid #444; background: #2a2a3d; color: #fff; text-align: center; }
+        label { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; font-size: 1.1rem; }
+        
+        /* شاشة اللعبة */
         #game-room { width: 100vw; height: 100vh; position: relative; }
         #viewport-3d { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
-        #header-bar { position: absolute; top: 10px; left: 20px; right: 20px; display: flex; justify-content: space-between; font-size: 24px; pointer-events: none; z-index: 5; color: #fff; }
-        #ui-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; flex-direction: column; align-items: center; }
-        #game-chat { background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 5px; margin-bottom: 10px; min-width: 200px; min-height: 50px; }
+        
+        #header-bar { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.7); padding: 12px 24px; border-radius: 8px; z-index: 5; border: 1px solid rgba(255,255,255,0.1); }
+        .info-box { font-size: 1.2rem; font-weight: bold; }
+        #timer { color: #f1c40f; font-size: 1.5rem; }
+        
+        #ui-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 600px; }
+        #game-chat { background: rgba(0, 0, 0, 0.75); padding: 12px; border-radius: 8px; width: 100%; max-height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 0.9rem; text-align: right; border: 1px solid #444; }
+        
+        /* الألغاز التفاعلية */
+        #interactive-puzzle-panel { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 6; background: rgba(20, 20, 20, 0.9); border: 2px solid #e74c3c; border-radius: 10px; padding: 20px; min-width: 300px; text-align: center; }
+        .wire { height: 25px; margin: 10px 0; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; }
+        .wire-red { background: #e74c3c; }
+        .wire-blue { background: #3498db; }
+        .wire-green { background: #2ecc71; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .keypad button { margin: 0; padding: 15px; background: #34495e; }
     </style>
 </head>
 <body>
-    <div id="start-screen">
-        <h1>لعبة الأبطال: الأعمى والأصم والأبكم</h1>
-        <button id="create-room-btn">إنشاء غرفة</button>
-        <button id="join-room-btn">الدخول لغرفة</button>
-        <input type="text" id="room-code-input" placeholder="رمز الغرفة">
-        <input type="text" id="password-input" placeholder="كلمة السر">
-        <button id="settings-btn">الإعدادات</button>
+
+    <!-- القائمة الرئيسية -->
+    <div id="start-screen" class="screen-overlay">
+        <div class="menu-card">
+            <h1>أبطال التفكيك</h1>
+            <p style="margin-bottom: 15px; color: #aaa;">الأعمى، الأصم، والأبكم</p>
+            <input type="text" id="room-code-input" placeholder="رمز الغرفة">
+            <input type="text" id="password-input" placeholder="كلمة السر">
+            <button id="create-room-btn">إنشاء غرفة</button>
+            <button id="join-room-btn" class="secondary">الدخول لغرفة</button>
+            <button id="settings-btn" class="secondary">الإعدادات</button>
+        </div>
     </div>
 
-    <div id="settings-screen" class="hidden">
-        <h2>الإعدادات</h2>
-        <label>اللغة:
-            <select id="lang-select">
-                <option value="ar">العربية</option>
-                <option value="en">English</option>
-            </select>
-        </label>
-        <br>
-        <label>الموسيقى: <input type="checkbox" id="music-toggle" checked></label>
-        <br>
-        <label>الأصوات: <input type="checkbox" id="sound-toggle" checked></label>
-        <button id="back-to-start">رجوع</button>
+    <!-- قائمة الإعدادات -->
+    <div id="settings-screen" class="screen-overlay hidden">
+        <div class="menu-card">
+            <h2>الإعدادات</h2>
+            <label>اللغة:
+                <select id="lang-select" style="width: auto;">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+            <label>الموسيقى: <input type="checkbox" id="music-toggle" checked style="width: auto;"></label>
+            <label>الأصوات: <input type="checkbox" id="sound-toggle" checked style="width: auto;"></label>
+            <button id="back-to-start" class="secondary">رجوع</button>
+        </div>
     </div>
 
+    <!-- قائمة اختيار الطور -->
+    <div id="modes-menu" class="screen-overlay hidden">
+        <div class="menu-card">
+            <h2>اختر طور اللعبة</h2>
+            <button id="story-mode">طور القصة (30 مستوى)</button>
+            <button id="infinite-mode" class="secondary">الطور اللانهائي</button>
+            <button id="custom-mode" class="secondary">الطور المخصص</button>
+        </div>
+    </div>
+
+    <!-- غرفة اللعبة -->
     <div id="game-room" class="hidden">
         <div id="header-bar">
-            <span>دورك: <span id="role-name"></span></span>
-            <span id="timer">05:00</span>
-            <span>المستوى: <span id="level-num">1</span></span>
+            <div class="info-box">الدور: <span id="role-name" style="color: #e74c3c;">-</span></div>
+            <div class="info-box" id="timer">05:00</div>
+            <div class="info-box">المستوى: <span id="level-num">1</span></div>
         </div>
+
         <div id="viewport-3d"></div>
-        <div id="ui-overlay">
-            <button id="mic-toggle">إيقاف الميكروفون</button>
-            <div id="game-chat"></div>
+
+        <!-- اللوحة التفاعلية للألغاز -->
+        <div id="interactive-puzzle-panel" class="hidden">
+            <h3 id="puzzle-title">تفكيك القنبلة</h3>
+            <div id="puzzle-content"></div>
         </div>
-        
-        <div id="modes-menu" class="hidden">
-            <h3>اختر طور اللعبة</h3>
-            <button id="story-mode">طور القصة</button>
-            <button id="infinite-mode">الطور اللانهائي</button>
-            <button id="custom-mode">الطور المخصص</button>
+
+        <div id="ui-overlay">
+            <div id="game-chat"></div>
+            <button id="mic-toggle">إيقاف الميكروفون</button>
         </div>
     </div>
 
-    <audio id="bg-music" loop>
-        <source src="background-music.mp3" type="audio/mpeg">
+    <!-- الصوتيات -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- المحرك ثلاثي الأبعاد -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
+        // --- 1. إدارة الواجهات والأنظمة الأساسية ---
         const startScreen = document.getElementById('start-screen');
         const settingsScreen = document.getElementById('settings-screen');
-        const gameRoom = document.getElementById('game-room');
         const modesMenu = document.getElementById('modes-menu');
+        const gameRoom = document.getElementById('game-room');
         const bgMusic = document.getElementById('bg-music');
         const musicToggle = document.getElementById('music-toggle');
-        
+        const chatBox = document.getElementById('game-chat');
+        const roleNameDisplay = document.getElementById('role-name');
+        const micToggleBtn = document.getElementById('mic-toggle');
+
+        let currentMode = 'story';
+        let currentLevel = 1;
+        let userRole = 'الأعمى'; // الأعمى، الأصم، الأبكم
+        let localStream = null;
+
         document.getElementById('settings-btn').addEventListener('click', () => {
             startScreen.classList.add('hidden');
             settingsScreen.classList.remove('hidden');
@@ -87,108 +143,243 @@
         });
 
         musicToggle.addEventListener('change', () => {
-            if (musicToggle.checked) bgMusic.play();
+            if (musicToggle.checked) bgMusic.play().catch(()=>{});
             else bgMusic.pause();
         });
 
-        function startGameRoom() {
+        function logChat(msg) {
+            const div = document.createElement('div');
+            div.textContent = msg;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // --- 2. إتاحة الدخول والأنماط ---
+        document.getElementById('create-room-btn').addEventListener('click', openModeSelection);
+        document.getElementById('join-room-btn').addEventListener('click', openModeSelection);
+
+        function openModeSelection() {
             startScreen.classList.add('hidden');
-            settingsScreen.classList.add('hidden');
             modesMenu.classList.remove('hidden');
-            gameRoom.classList.remove('hidden');
-            if (!musicToggle.checked) bgMusic.pause();
+            if (musicToggle.checked) bgMusic.play().catch(()=>{});
         }
 
-        function startActualGame() {
+        document.getElementById('story-mode').addEventListener('click', () => startGame('story'));
+        document.getElementById('infinite-mode').addEventListener('click', () => startGame('infinite'));
+        document.getElementById('custom-mode').addEventListener('click', () => startGame('custom'));
+
+        function startGame(mode) {
+            currentMode = mode;
             modesMenu.classList.add('hidden');
+            gameRoom.classList.remove('hidden');
+            
+            // تعيين دور عشوائي للتجربة
+            const roles = ['الأعمى', 'الأصم', 'الأبكم'];
+            userRole = roles[Math.floor(Math.random() * roles.length)];
+            assignRole(userRole);
+
             initThreeJS();
-            startTimer();
+            startTimer(300); // 5 دقائق
+            enableMicrophone();
+            loadPuzzleLevel(currentLevel);
         }
 
-        document.getElementById('join-room-btn').addEventListener('click', startGameRoom);
-        document.getElementById('story-mode').addEventListener('click', startActualGame);
-        document.getElementById('infinite-mode').addEventListener('click', startActualGame);
-        document.getElementById('custom-mode').addEventListener('click', startActualGame);
+        // --- 3. إدارة الأدوار والأذونات ---
+        function assignRole(role) {
+            userRole = role;
+            roleNameDisplay.innerText = role;
+            logChat(`تم تعيين دورك كـ: [${role}]`);
 
-        let localStream;
-        let renderer, scene, camera;
-        const roleName = document.getElementById('role-name');
-        const micToggle = document.getElementById('mic-toggle');
-
-        function initThreeJS() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('viewport-3d').appendChild(renderer.domElement);
-
-            const geometry = new THREE.BoxGeometry();
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-            camera.position.z = 5;
-
-            function animate() {
-                requestAnimationFrame(animate);
-                renderer.render(scene, camera);
-            }
-            animate();
-        }
-
-        async function assignRole(role) {
-            roleName.innerText = role;
             if (role === 'الأصم') {
+                logChat("ملاحظة: بصفتك أصم، تم كتم صوته ولا تستمع للآخرين، اعتمد على الإشارات واللوحة.");
                 if (localStream) localStream.getAudioTracks()[0].enabled = false;
+            } else if (role === 'الأعمى') {
+                logChat("ملاحظة: بصفتك أعمى، لا يمكنك رؤية دليل الألغاز، يجب أن تتلقى التعليمات.");
+            } else if (role === 'الأبكم') {
+                logChat("ملاحظة: بصفتك أبكم، يمكنك رؤية الدليل ولكن لا يمكنك التحدث بالميكروفون.");
             }
         }
 
         async function enableMicrophone() {
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                logChat("تم تفعيل الميكروفون بنجاح.");
+                if (userRole === 'الأبكم' || userRole === 'الأصم') {
+                    localStream.getAudioTracks()[0].enabled = false;
+                    micToggleBtn.innerText = "الميكروفون معطل لهذا الدور";
+                    micToggleBtn.disabled = true;
+                }
             } catch (err) {
-                console.error("خطأ في الميكروفون:", err);
+                logChat("لم يتم الحصول على إذن الميكروفون.");
             }
         }
 
-        micToggle.addEventListener('click', () => {
-            if (localStream) {
-                const audioTrack = localStream.getAudioTracks()[0];
-                audioTrack.enabled = !audioTrack.enabled;
-                micToggle.innerText = audioTrack.enabled ? "إيقاف الميكروفون" : "تشغيل الميكروفون";
+        micToggleBtn.addEventListener('click', () => {
+            if (localStream && !micToggleBtn.disabled) {
+                const track = localStream.getAudioTracks()[0];
+                track.enabled = !track.enabled;
+                micToggleBtn.innerText = track.enabled ? "إيقاف الميكروفون" : "تشغيل الميكروفون";
             }
         });
 
-        setTimeout(() => {
-            assignRole('الأعمى');
-            enableMicrophone();
-        }, 2000);
+        // --- 4. محرك ثلاثي الأبعاد (Three.js) ---
+        let renderer, scene, camera, bombMesh;
 
+        function initThreeJS() {
+            const container = document.getElementById('viewport-3d');
+            container.innerHTML = '';
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x11111a);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // إضاءة
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xe74c3c, 1, 100);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+
+            // مجسم القنبلة
+            const geometry = new THREE.BoxGeometry(2, 1.5, 1);
+            const material = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.2 });
+            bombMesh = new THREE.Mesh(geometry, material);
+            scene.add(bombMesh);
+
+            camera.position.z = 4;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (bombMesh) {
+                    bombMesh.rotation.y += 0.005;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // --- 5. منطق الأطوار والألغاز ---
         let timerInterval;
-        function startTimer() {
-            let timerDisplay = document.getElementById('timer');
-            let duration = 300;
+
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            let duration = seconds;
+            const timerDisplay = document.getElementById('timer');
+
             timerInterval = setInterval(() => {
-                let minutes = parseInt(duration / 60, 10);
-                let seconds = parseInt(duration % 60, 10);
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                timerDisplay.textContent = minutes + ":" + seconds;
+                let m = Math.floor(duration / 60);
+                let s = duration % 60;
+                m = m < 10 ? "0" + m : m;
+                s = s < 10 ? "0" + s : s;
+                timerDisplay.textContent = `${m}:${s}`;
+
                 if (--duration < 0) {
                     clearInterval(timerInterval);
-                    alert("انتهى الوقت! انفجرت القنبلة.");
+                    alert("انتهى الوقت! انفجرت القنبلة!");
+                    location.reload();
                 }
             }, 1000);
         }
 
-        const GameManager = {
-            currentLevel: 1,
-            generatePuzzle: function() {
-                if (this.currentLevel <= 10) console.log("لغز القصة: قطع السلك.");
-                else if (this.currentLevel <= 20) console.log("لغز رياضي.");
-                else console.log("لغز لوحة المفاتيح.");
+        function loadPuzzleLevel(lvl) {
+            document.getElementById('level-num').innerText = lvl;
+            const panel = document.getElementById('interactive-puzzle-panel');
+            const content = document.getElementById('puzzle-content');
+            panel.classList.remove('hidden');
+
+            if (lvl <= 10 || currentMode === 'story') {
+                // ألغاز الأسلاك (المستويات 1-10)
+                content.innerHTML = `
+                    <p style="margin-bottom:10px;">اقطع السلك الصحيح بناءً على تعليمات الأبكم:</p>
+                    <div class="wire wire-red" onclick="solveWire('red')">سلك أحمر</div>
+                    <div class="wire wire-blue" onclick="solveWire('blue')">سلك أزرق</div>
+                    <div class="wire wire-green" onclick="solveWire('green')">سلك أخضر</div>
+                `;
+            } else if (lvl <= 20 || currentMode === 'infinite') {
+                // ألغاز لوحة المفاتيح والرموز (المستويات 11-20)
+                content.innerHTML = `
+                    <p style="margin-bottom:10px;">أدخل الرمز السرية (4 أرقام):</p>
+                    <input type="text" id="keypad-input" readonly style="margin-bottom:10px; font-size:1.5rem; text-align:center;">
+                    <div class="keypad">
+                        <button onclick="pressKey('1')">1</button>
+                        <button onclick="pressKey('2')">2</button>
+                        <button onclick="pressKey('3')">3</button>
+                        <button onclick="pressKey('4')">4</button>
+                        <button onclick="pressKey('5')">5</button>
+                        <button onclick="pressKey('6')">6</button>
+                        <button onclick="pressKey('7')">7</button>
+                        <button onclick="pressKey('8')">8</button>
+                        <button onclick="pressKey('9')">9</button>
+                    </div>
+                `;
+            } else {
+                // طور مخصص أو ألغاز معقدة (المستويات 21-30)
+                content.innerHTML = `
+                    <p style="margin-bottom:10px;">حل المعادلة الرياضية لفك الشفرة:</p>
+                    <p style="font-size:1.2rem; color:#f1c40f; margin:10px 0;">5 x 3 + 7 = ?</p>
+                    <input type="number" id="math-answer" placeholder="الإجابة">
+                    <button onclick="solveMath()">تأكيد الإجابة</button>
+                `;
             }
-        };
-        GameManager.generatePuzzle();
+        }
+
+        // تفاعل الألغاز
+        function solveWire(color) {
+            if (color === 'blue') {
+                alert("تم تفكيك القنبلة بنجاح!");
+                nextLevel();
+            } else {
+                alert("خطأ! اقطع سلكاً آخر أو انفجرت القنبلة!");
+            }
+        }
+
+        let enteredCode = "";
+        function pressKey(num) {
+            const input = document.getElementById('keypad-input');
+            enteredCode += num;
+            input.value = enteredCode;
+            if (enteredCode.length === 4) {
+                if (enteredCode === "1234") {
+                    alert("تم إدخال الرمز الصحيح!");
+                    enteredCode = "";
+                    nextLevel();
+                } else {
+                    alert("رمز خاطئ!");
+                    enteredCode = "";
+                    input.value = "";
+                }
+            }
+        }
+
+        function solveMath() {
+            const val = document.getElementById('math-answer').value;
+            if (val === "22") {
+                alert("إجابة صحيحة! تم إبطال القنبلة.");
+                nextLevel();
+            } else {
+                alert("إجابة خاطئة!");
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel > 30 && currentMode === 'story') {
+                alert("تهانينا! لقد أنهيت طور القصة بالكامل!");
+                location.reload();
+            } else {
+                loadPuzzleLevel(currentLevel);
+            }
+        }
     </script>
 </body>
 </html>
